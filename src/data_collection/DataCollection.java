@@ -20,6 +20,10 @@ import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+
 /**
  * Created by Phong on 16/11/2016.
  */
@@ -34,7 +38,7 @@ public class DataCollection extends Application {
     private boolean drawflag = true;
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException {
         //Gaze
         final GazeManager gm = GazeManager.getInstance();
         gm.addConnectionStateListener(new IConnectionStateListener() {
@@ -73,6 +77,9 @@ public class DataCollection extends Application {
         });
         initDraw(graphicsContext);
 
+        // Initialize the writer which will wtite data to file
+        BufferedWriter writer = new BufferedWriter(new FileWriter("output.csv"));
+
         // Add Listener
         gm.addGazeListener(new IGazeListener() {
             @Override
@@ -82,8 +89,16 @@ public class DataCollection extends Application {
                 float x = gazeData.rawCoordinates.x;
                 float y = gazeData.rawCoordinates.y;
 
-                // TO-DO: write to file. 
+                // TO-DO: write to file.
+                String stringX = Float.toString(x);
+                String stringY = Float.toString(y);
 
+                try {
+                    writer.write(stringX + "," + stringY + "\n");
+                    writer.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 if(x == 0 && y == 0)
                 {
