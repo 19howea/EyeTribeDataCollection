@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.theeyetribe</groupId>
+  <artifactId>eyetribe-java</artifactId>
+  <version>0.9.77</version>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.5</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>13.0</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+  <name>eyetribe-java</name>
+  <description>Java SDK for the EyeTribe Dev Kit.</description>
+  <url>http://www.eyetribe.com</url>
+  <scm>
+    <url>scm:https://github.com/EyeTribe/tet-java-client</url>
+    <connection>scm:git@github.com:EyeTribe/tet-java-client.git</connection>
+    <developerConnection>scm:git@github.com:EyeTribe/tet-java-client.git</developerConnection>
+  </scm>
+  <licenses>
+    <license>
+      <name>BSD</name>
+      <url>https://opensource.org/licenses/BSD-2-Clause</url>
+      <distribution>maven</distribution>
+    </license>
+  </licenses>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/EyeTribe/tet-java-client/issues</url>
+  </issueManagement>
+</project>
