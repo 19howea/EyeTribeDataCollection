@@ -13,6 +13,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -30,12 +31,17 @@ import java.io.FileWriter;
 public class DataCollection extends Application {
 
     private int LINE_WIDTH = 5;
-    private float before_x = 0;
-    private float before_y = 0;
+    private double before_x = 0;
+    private double before_y = 0;
+    private double offsetX = 0;
+    private double offsetY = 0;
+    private double rawX = 0;
+    private double rawY = 0;
     private ColorPicker colorPicker;
     private int X_SCREEN_MAX = (int)Screen.getPrimary().getVisualBounds().getMaxX();
     private int Y_SCREEN_MAX = (int)Screen.getPrimary().getVisualBounds().getMaxY();
     private boolean drawflag = true;
+
 
     @Override
     public void start(Stage primaryStage) throws IOException {
@@ -85,13 +91,21 @@ public class DataCollection extends Application {
             @Override
             public void onGazeUpdate(GazeData gazeData) {
                 final float RECT_RADIUS = 100;
-                System.out.println(gazeData.rawCoordinates.toString());
-                float x = gazeData.rawCoordinates.x;
-                float y = gazeData.rawCoordinates.y;
+                //System.out.println(gazeData.rawCoordinates.toString());
+                double x = gazeData.rawCoordinates.x;
+                double y = gazeData.rawCoordinates.y;
+
+                rawX = x;
+                rawY = y;
+
+                System.out.println(offsetX + "," + offsetY);
+
+                x = x + offsetX;
+                y = y + offsetY;
 
                 // TO-DO: write to file.
-                String stringX = Float.toString(x);
-                String stringY = Float.toString(y);
+                String stringX = Double.toString(x);
+                String stringY = Double.toString(y);
 
                 try {
                     writer.write(stringX + "," + stringY + "\n");
@@ -106,7 +120,7 @@ public class DataCollection extends Application {
                 }
                 if(x < 0 || x > graphicsContext.getCanvas().getWidth() || y < 0 || y > graphicsContext.getCanvas().getHeight())
                 {
-                    System.out.println("see outside");
+                    //System.out.println("see outside");
                     return;
                 }
                 graphicsContext.setStroke(colorPicker.getValue());
@@ -125,6 +139,16 @@ public class DataCollection extends Application {
         });
         gm.activate();
         StackPane root = new StackPane();
+        root.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                double clickX = event.getSceneX();
+                double clickY = event.getSceneY();
+                offsetX = clickX - rawX;
+                offsetY = clickY - rawY;
+            }
+        });
+
         VBox vBox = new VBox();
         HBox hBox = new HBox();
         hBox.getChildren().addAll(colorPicker, clear);
