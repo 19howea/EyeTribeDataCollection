@@ -50,6 +50,7 @@ public class DataCollection extends Application {
     private int X_SCREEN_MAX = (int)Screen.getPrimary().getVisualBounds().getMaxX();
     private int Y_SCREEN_MAX = (int)Screen.getPrimary().getVisualBounds().getMaxY();
     private boolean drawflag = true;
+    long counter = 0L;
 
 
     @Override
@@ -121,7 +122,7 @@ public class DataCollection extends Application {
                 rawX = x;
                 rawY = y;
 
-                System.out.println(offsetX + "," + offsetY);
+                //System.out.println(offsetX + "," + offsetY);
 
                 x = x + offsetX;
                 y = y + offsetY;
@@ -132,7 +133,10 @@ public class DataCollection extends Application {
 
                 try {
                     writer.write(timeStamp + "," + stringX + "," + stringY + "\n");
-                    writer.flush();
+                    counter++;
+                    if(counter % 100 == 0) {
+                        writer.flush();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -185,6 +189,13 @@ public class DataCollection extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
+                try {
+                    writer.flush();
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("Total data collected: " + counter);
                 Platform.exit();
                 System.exit(0);
             }
