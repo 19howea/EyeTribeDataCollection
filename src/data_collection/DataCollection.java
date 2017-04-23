@@ -6,6 +6,7 @@ import com.theeyetribe.clientsdk.IGazeListener;
 import com.theeyetribe.clientsdk.ITrackerStateListener;
 import com.theeyetribe.clientsdk.data.GazeData;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -20,15 +21,22 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
 
 import java.io.IOException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.util.Date;
 
 /**
  * Created by Phong on 16/11/2016.
  */
 public class DataCollection extends Application {
+
+    final String experimenterName = "Andrew_Howe";
 
     private int LINE_WIDTH = 5;
     private double before_x = 0;
@@ -83,8 +91,20 @@ public class DataCollection extends Application {
         });
         initDraw(graphicsContext);
 
+        // Add the timestamp into the file's name
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        Date date = new Date();
+        String timeNow = sdf.format(date);
+
+        //Check if folder exists, if not, create one
+        File directory = new File("EyeGazeData");
+        if (! directory.exists()){
+            directory.mkdir();
+        }
+
         // Initialize the writer which will wtite data to file
-        BufferedWriter writer = new BufferedWriter(new FileWriter("output.csv"));
+        String fileName = "EyeGazeData/" + timeNow + "_" + experimenterName + "_GazeData.csv";
+        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
 
         // Add Listener
         gm.addGazeListener(new IGazeListener() {
@@ -94,6 +114,8 @@ public class DataCollection extends Application {
                 //System.out.println(gazeData.rawCoordinates.toString());
                 double x = gazeData.rawCoordinates.x;
                 double y = gazeData.rawCoordinates.y;
+                String timeStamp = gazeData.timeStampString;
+
 
                 rawX = x;
                 rawY = y;
@@ -108,7 +130,7 @@ public class DataCollection extends Application {
                 String stringY = Double.toString(y);
 
                 try {
-                    writer.write(stringX + "," + stringY + "\n");
+                    writer.write(timeStamp + "," + stringX + "," + stringY + "\n");
                     writer.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -155,9 +177,17 @@ public class DataCollection extends Application {
         vBox.getChildren().addAll(hBox,canvas);
         root.getChildren().add(vBox);
         Scene scene = new Scene(root, 300, 300);
-        primaryStage.setTitle("test");
+        primaryStage.setTitle("Eye Gaze Visualization");
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                Platform.exit();
+                System.exit(0);
+            }
+        });
     }
 
     public static void main(String[] args) {
