@@ -30,13 +30,14 @@ import java.io.IOException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Date;
+import javax.swing.JOptionPane;
 
 /**
  * Created by Phong on 16/11/2016.
  */
 public class DataCollection extends Application {
 
-    final String experimenterName = "Andrew_Howe";
+    private static String experimenterName = "NO-NAME";
 
     private int LINE_WIDTH = 5;
     private double before_x = 0;
@@ -191,6 +192,8 @@ public class DataCollection extends Application {
     }
 
     public static void main(String[] args) {
+        experimenterName = JOptionPane.showInputDialog("Please input your full name.");
+        experimenterName = experimenterName.replaceAll(" ", "_");
         launch(args);
     }
 
