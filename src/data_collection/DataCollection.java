@@ -51,6 +51,8 @@ public class DataCollection extends Application {
     private int Y_SCREEN_MAX = (int)Screen.getPrimary().getVisualBounds().getMaxY();
     private boolean drawflag = true;
     long counter = 0L;
+    private boolean writingFlag = false;
+    BufferedWriter writer;
 
 
     @Override
@@ -75,38 +77,32 @@ public class DataCollection extends Application {
         Canvas canvas = new Canvas(X_SCREEN_MAX,Y_SCREEN_MAX-50);
         // Initialize Clear Button
         final GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
-        Button clear = new Button("Clear");
-        clear.setOnAction(new EventHandler<ActionEvent>() {
+        Button startButton = new Button("Start Data Collection");
+        startButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-
-                graphicsContext.setStroke(Color.BLACK);
-                graphicsContext.clearRect(0,0,canvas.getWidth(),canvas.getHeight());
-                graphicsContext.strokeRect(
-                        0,              //x of the upper left corner
-                        0,              //y of the upper left corner
-                        canvas.getWidth(),    //width of the rectangle
-                        canvas.getHeight());  //height of the rectangle
-                graphicsContext.setStroke(colorPicker.getValue());
-                System.out.println("Canvas Clear");
+                writingFlag = true;
+                // Add the timestamp into the file's name
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+                Date date = new Date();
+                String timeNow = sdf.format(date);
+                // Initialize the writer which will wtite data to file
+                String fileName = "EyeGazeData/" + timeNow + "_" + experimenterName + "_GazeData.csv";
+                try {
+                    writer = new BufferedWriter(new FileWriter(fileName));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("Start Writing To File");
             }
         });
         initDraw(graphicsContext);
-
-        // Add the timestamp into the file's name
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-        Date date = new Date();
-        String timeNow = sdf.format(date);
 
         //Check if folder exists, if not, create one
         File directory = new File("EyeGazeData");
         if (! directory.exists()){
             directory.mkdir();
         }
-
-        // Initialize the writer which will wtite data to file
-        String fileName = "EyeGazeData/" + timeNow + "_" + experimenterName + "_GazeData.csv";
-        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
 
         // Add Listener
         gm.addGazeListener(new IGazeListener() {
@@ -131,15 +127,18 @@ public class DataCollection extends Application {
                 String stringX = Double.toString(x);
                 String stringY = Double.toString(y);
 
-                try {
-                    writer.write(timeStamp + "," + stringX + "," + stringY + "\n");
-                    counter++;
-                    if(counter % 100 == 0) {
-                        writer.flush();
+                if (writingFlag) {
+                    try {
+                        writer.write(timeStamp + "," + stringX + "," + stringY + "\n");
+                        counter++;
+                        if(counter % 100 == 0) {
+                            writer.flush();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+
 
                 if(x == 0 && y == 0)
                 {
@@ -178,7 +177,7 @@ public class DataCollection extends Application {
 
         VBox vBox = new VBox();
         HBox hBox = new HBox();
-        hBox.getChildren().addAll(colorPicker, clear);
+        hBox.getChildren().addAll(startButton);
         vBox.getChildren().addAll(hBox,canvas);
         root.getChildren().add(vBox);
         Scene scene = new Scene(root, 300, 300);
