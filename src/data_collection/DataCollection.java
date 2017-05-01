@@ -9,6 +9,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -20,6 +21,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Screen;
@@ -53,9 +55,11 @@ public class DataCollection extends Application {
     private int X_SCREEN_MAX = (int)Screen.getPrimary().getVisualBounds().getMaxX();
     private int Y_SCREEN_MAX = (int)Screen.getPrimary().getVisualBounds().getMaxY();
     private boolean drawflag = true;
-    long counter = 0L;
+    private long counter = 0L;
     private boolean writingFlag = false;
-    BufferedWriter writer;
+    private BufferedWriter writer;
+    private double canvasWidth;
+    private double canvasHeight;
 
 
     @Override
@@ -75,43 +79,62 @@ public class DataCollection extends Application {
             }
         });
 
+        //Draw the shape of SAT reading test arrangement on Khan Academy
+        Rectangle rect1 = new Rectangle(0,30,X_SCREEN_MAX,200);
+        rect1.setFill(Color.TRANSPARENT);
+        rect1.setStroke(Color.BLACK);
+        rect1.setStrokeWidth(10);
+
+        Rectangle rect2 = new Rectangle(0,250,X_SCREEN_MAX/2 - 50,Y_SCREEN_MAX-300);
+        rect2.setFill(Color.TRANSPARENT);
+        rect2.setStroke(Color.BLACK);
+        rect2.setStrokeWidth(10);
+
+        Rectangle rect3 = new Rectangle(X_SCREEN_MAX/2 + 50,250,X_SCREEN_MAX/2 - 50,Y_SCREEN_MAX-300);
+        rect3.setFill(Color.TRANSPARENT);
+        rect3.setStroke(Color.BLACK);
+        rect3.setStrokeWidth(10);
+
         // Initialize Canvas
         primaryStage.setMaximized(true);
         Canvas canvas = new Canvas(X_SCREEN_MAX,Y_SCREEN_MAX-50);
-        // Initialize Clear Button
+
+        // Initialize Graphic Context
         final GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
+        // Prepare the graphic Context
+        initDraw(graphicsContext);
+
         // Create a start button to start collecting data
         Button startButton = new Button("Start Data Collection");
         Label label = new Label();
+
+        startButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                writingFlag = true;
+                // Add the timestamp into the file's name
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+                Date date = new Date();
+                String timeNow = sdf.format(date);
+                // Initialize the writer which will wtite data to file
+                String fileName = "EyeGazeData/" + timeNow + "_" + experimenterName + "_GazeData.csv";
+                try {
+                    writer = new BufferedWriter(new FileWriter(fileName));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    label.setText("There is an error with trying to write to file.");
+                }
+                System.out.println("Start Writing To File");
+                startButton.setDisable(true);
+                label.setText("Collecting Data Now...");
+            }
+        });
 
         // Wrap drawing code into Platform.runLater for stability of thread synchronization.
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                startButton.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent event) {
-                        writingFlag = true;
-                        // Add the timestamp into the file's name
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-                        Date date = new Date();
-                        String timeNow = sdf.format(date);
-                        // Initialize the writer which will wtite data to file
-                        String fileName = "EyeGazeData/" + timeNow + "_" + experimenterName + "_GazeData.csv";
-                        try {
-                            writer = new BufferedWriter(new FileWriter(fileName));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            label.setText("There is an error with trying to write to file.");
-                        }
-                        System.out.println("Start Writing To File");
-                        startButton.setDisable(true);
-                        label.setText("Collecting Data Now...");
-                    }
-                });
 
-                // Prepare the graphic Context
-                initDraw(graphicsContext);
 
                 //Check if folder exists, if not, create one
                 File directory = new File("EyeGazeData");
@@ -180,7 +203,7 @@ public class DataCollection extends Application {
                     }
                 });
                 gm.activate();
-                StackPane root = new StackPane();
+                Group root = new Group();
                 root.setOnMouseClicked(new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent event) {
@@ -196,12 +219,11 @@ public class DataCollection extends Application {
                 hBox.getChildren().addAll(startButton);
                 hBox.getChildren().addAll(label);
                 vBox.getChildren().addAll(hBox,canvas);
-                root.getChildren().add(vBox);
+                root.getChildren().addAll(rect1, rect2, rect3, vBox);
                 Scene scene = new Scene(root, 300, 300);
                 primaryStage.setTitle("Eye Gaze Visualization");
                 primaryStage.setScene(scene);
                 primaryStage.show();
-
                 primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
                     @Override
                     public void handle(WindowEvent event) {
@@ -234,9 +256,9 @@ public class DataCollection extends Application {
     private void initDraw(GraphicsContext gc){
 
         colorPicker = new ColorPicker(Color.BLACK);
-        double canvasWidth = gc.getCanvas().getWidth();
-        double canvasHeight = gc.getCanvas().getHeight();
-        gc.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        canvasWidth = gc.getCanvas().getWidth();
+        canvasHeight = gc.getCanvas().getHeight();
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 52));
         System.out.println("Screen Width: " + canvasWidth + "\nScreen Height: " + canvasHeight);
 
     }
