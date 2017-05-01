@@ -14,11 +14,14 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -62,13 +65,13 @@ public class DataCollection extends Application {
         gm.addConnectionStateListener(new IConnectionStateListener() {
             @Override
             public void onConnectionStateChanged(boolean b) {
-                System.out.println("" + b);
+                System.out.println("State of Connection with EyeTribe Device: " + b);
             }
         });
         gm.addTrackerStateListener(new ITrackerStateListener() {
             @Override
             public void onTrackerStateChanged(int i) {
-                System.out.println(i);
+                System.out.println("State of Tracker Listener: " + i);
             }
         });
 
@@ -77,126 +80,147 @@ public class DataCollection extends Application {
         Canvas canvas = new Canvas(X_SCREEN_MAX,Y_SCREEN_MAX-50);
         // Initialize Clear Button
         final GraphicsContext graphicsContext = canvas.getGraphicsContext2D();
+        // Create a start button to start collecting data
         Button startButton = new Button("Start Data Collection");
-        startButton.setOnAction(new EventHandler<ActionEvent>() {
+        Label label = new Label();
+
+        // Wrap drawing code into Platform.runLater for stability of thread synchronization.
+        Platform.runLater(new Runnable() {
             @Override
-            public void handle(ActionEvent event) {
-                writingFlag = true;
-                // Add the timestamp into the file's name
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-                Date date = new Date();
-                String timeNow = sdf.format(date);
-                // Initialize the writer which will wtite data to file
-                String fileName = "EyeGazeData/" + timeNow + "_" + experimenterName + "_GazeData.csv";
-                try {
-                    writer = new BufferedWriter(new FileWriter(fileName));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                System.out.println("Start Writing To File");
-            }
-        });
-        initDraw(graphicsContext);
-
-        //Check if folder exists, if not, create one
-        File directory = new File("EyeGazeData");
-        if (! directory.exists()){
-            directory.mkdir();
-        }
-
-        // Add Listener
-        gm.addGazeListener(new IGazeListener() {
-            @Override
-            public void onGazeUpdate(GazeData gazeData) {
-                final float RECT_RADIUS = 100;
-                //System.out.println(gazeData.rawCoordinates.toString());
-                double x = gazeData.rawCoordinates.x;
-                double y = gazeData.rawCoordinates.y;
-                String timeStamp = gazeData.timeStampString;
-
-
-                rawX = x;
-                rawY = y;
-
-                //System.out.println(offsetX + "," + offsetY);
-
-                x = x + offsetX;
-                y = y + offsetY;
-
-                // TO-DO: write to file.
-                String stringX = Double.toString(x);
-                String stringY = Double.toString(y);
-
-                if (writingFlag) {
-                    try {
-                        writer.write(timeStamp + "," + stringX + "," + stringY + "\n");
-                        counter++;
-                        if(counter % 100 == 0) {
-                            writer.flush();
+            public void run() {
+                startButton.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        writingFlag = true;
+                        // Add the timestamp into the file's name
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+                        Date date = new Date();
+                        String timeNow = sdf.format(date);
+                        // Initialize the writer which will wtite data to file
+                        String fileName = "EyeGazeData/" + timeNow + "_" + experimenterName + "_GazeData.csv";
+                        try {
+                            writer = new BufferedWriter(new FileWriter(fileName));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            label.setText("There is an error with trying to write to file.");
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        System.out.println("Start Writing To File");
+                        startButton.setDisable(true);
+                        label.setText("Collecting Data Now...");
                     }
+                });
+
+                // Prepare the graphic Context
+                initDraw(graphicsContext);
+
+                //Check if folder exists, if not, create one
+                File directory = new File("EyeGazeData");
+                if (! directory.exists()){
+                    directory.mkdir();
                 }
 
+                // Add Listener
+                gm.addGazeListener(new IGazeListener() {
+                    @Override
+                    public void onGazeUpdate(GazeData gazeData) {
+                        final float RECT_RADIUS = 100;
+                        //System.out.println(gazeData.rawCoordinates.toString());
+                        double x = gazeData.rawCoordinates.x;
+                        double y = gazeData.rawCoordinates.y;
+                        String timeStamp = gazeData.timeStampString;
 
-                if(x == 0 && y == 0)
-                {
-                    return;
-                }
-                if(x < 0 || x > graphicsContext.getCanvas().getWidth() || y < 0 || y > graphicsContext.getCanvas().getHeight())
-                {
-                    //System.out.println("see outside");
-                    return;
-                }
-                graphicsContext.setStroke(colorPicker.getValue());
-                graphicsContext.setFill(colorPicker.getValue());
-                graphicsContext.beginPath();
-                graphicsContext.clearRect(before_x-RECT_RADIUS,before_y-RECT_RADIUS,before_x+RECT_RADIUS,before_y+RECT_RADIUS);
-                graphicsContext.strokeRect(
-                        0,              //x of the upper left corner
-                        0,              //y of the upper left corner
-                        canvas.getWidth(),    //width of the rectangle
-                        canvas.getHeight());  //height of the rectangle
-                graphicsContext.fillOval(x-RECT_RADIUS,y-RECT_RADIUS,RECT_RADIUS,RECT_RADIUS);
-                before_x = x;
-                before_y = y;
-            }
-        });
-        gm.activate();
-        StackPane root = new StackPane();
-        root.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                double clickX = event.getSceneX();
-                double clickY = event.getSceneY();
-                offsetX = clickX - rawX;
-                offsetY = clickY - rawY;
-            }
-        });
 
-        VBox vBox = new VBox();
-        HBox hBox = new HBox();
-        hBox.getChildren().addAll(startButton);
-        vBox.getChildren().addAll(hBox,canvas);
-        root.getChildren().add(vBox);
-        Scene scene = new Scene(root, 300, 300);
-        primaryStage.setTitle("Eye Gaze Visualization");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+                        rawX = x;
+                        rawY = y;
 
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                try {
-                    writer.flush();
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                System.out.println("Total data collected: " + counter);
-                Platform.exit();
-                System.exit(0);
+                        //System.out.println(offsetX + "," + offsetY);
+
+                        x = x + offsetX;
+                        y = y + offsetY;
+
+                        // TO-DO: write to file.
+                        String stringX = Double.toString(x);
+                        String stringY = Double.toString(y);
+
+                        if (writingFlag) {
+                            try {
+                                writer.write(timeStamp + "," + stringX + "," + stringY + "\n");
+                                counter++;
+                                if(counter % 100 == 0) {
+                                    writer.flush();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                label.setText("There is an error with trying to write to file.");
+                            }
+                        }
+
+
+                        if(x == 0 && y == 0)
+                        {
+                            return;
+                        }
+                        if(x < 0 || x > graphicsContext.getCanvas().getWidth() || y < 0 || y > graphicsContext.getCanvas().getHeight())
+                        {
+                            //System.out.println("see outside");
+                            return;
+                        }
+                        //graphicsContext.setStroke(colorPicker.getValue());
+                        graphicsContext.setFill(colorPicker.getValue());
+                        //graphicsContext.beginPath();
+                        graphicsContext.clearRect(before_x-RECT_RADIUS,before_y-RECT_RADIUS,before_x+RECT_RADIUS,before_y+RECT_RADIUS);
+//                graphicsContext.strokeRect(
+//                        0,              //x of the upper left corner
+//                        0,              //y of the upper left corner
+//                        canvas.getWidth(),    //width of the rectangle
+//                        canvas.getHeight());  //height of the rectangle
+                        graphicsContext.fillOval(x-RECT_RADIUS,y-RECT_RADIUS,RECT_RADIUS,RECT_RADIUS);
+                        before_x = x;
+                        before_y = y;
+                    }
+                });
+                gm.activate();
+                StackPane root = new StackPane();
+                root.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        double clickX = event.getSceneX();
+                        double clickY = event.getSceneY();
+                        offsetX = clickX - rawX;
+                        offsetY = clickY - rawY;
+                    }
+                });
+
+                VBox vBox = new VBox();
+                HBox hBox = new HBox();
+                hBox.getChildren().addAll(startButton);
+                hBox.getChildren().addAll(label);
+                vBox.getChildren().addAll(hBox,canvas);
+                root.getChildren().add(vBox);
+                Scene scene = new Scene(root, 300, 300);
+                primaryStage.setTitle("Eye Gaze Visualization");
+                primaryStage.setScene(scene);
+                primaryStage.show();
+
+                primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                    @Override
+                    public void handle(WindowEvent event) {
+                        if (writingFlag){
+                            try {
+                                writer.flush();
+                                writer.close();
+                                writingFlag = false;
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                label.setText("There is an error with Stream Writer.");
+                            }
+                        }
+
+                        System.out.println("Total data collected: " + counter);
+                        Platform.exit();
+                        System.exit(0);
+                    }
+                });
             }
         });
     }
@@ -212,20 +236,8 @@ public class DataCollection extends Application {
         colorPicker = new ColorPicker(Color.BLACK);
         double canvasWidth = gc.getCanvas().getWidth();
         double canvasHeight = gc.getCanvas().getHeight();
-
-        gc.setFill(Color.LIGHTGRAY);
-        gc.setStroke(Color.BLACK);
-        gc.setLineWidth(5);
-
-        gc.fill();
-        gc.strokeRect(
-                0,              //x of the upper left corner
-                0,              //y of the upper left corner
-                canvasWidth,    //width of the rectangle
-                canvasHeight);  //height of the rectangle
-
-        gc.setStroke(Color.BLUE);
-        gc.setLineWidth(LINE_WIDTH);
+        gc.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        System.out.println("Screen Width: " + canvasWidth + "\nScreen Height: " + canvasHeight);
 
     }
 }
