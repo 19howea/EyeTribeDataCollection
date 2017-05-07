@@ -25,7 +25,7 @@ for (j in 1:length(path)) {
        xlab = " X Cordinate", ylab = " Y Cordinate", 
        xlim = c(0,1920), ylim = c(990,0), 
        pch=19, col=rgb(0, 0, 1, 0.05),
-       xaxt='n', ann=FALSE,
+       xaxt='n', 
        yaxt='n')
   abline(v = 1920 / 2)
   readline(prompt = "Please type Enter to continue...")
