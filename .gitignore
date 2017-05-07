@@ -3,3 +3,5 @@ bin/
 out/
 *.csv
 Would skip repository EyeGazeData/
+
+R_Analysis/\.Rhistory
