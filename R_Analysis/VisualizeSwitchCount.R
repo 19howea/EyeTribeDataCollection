@@ -5,10 +5,6 @@ setwd(script.dir)
 # Prepare the path for files
 base.folder<- paste(script.dir,"/../EyeGazeData/",sep="")
 file.list <- list.files(base.folder)
-
-df = read.csv("../EyeGazeData/20170429_160122_Andrew_Howe_GazeData.csv", header = FALSE)
-colnames(df) = c("timeStamp", "xCordinate", "yCordinate")
-
 path <- paste(base.folder, file.list, sep ="")
 
 all.count <- c()
@@ -26,9 +22,7 @@ for (j in 1:length(path)) {
     }
   }
   df.cleaned = df[- remove_list, ]
-  df.cleaned$xCordinate <- as.numeric(df.cleaned$xCordinate)
-  df.cleaned$yCordinate <- as.numeric(df.cleaned$yCordinate)
-  
+
   # Count how many time you switch
   count = 0
   for (i in 1:(nrow(df.cleaned)-1)) {
