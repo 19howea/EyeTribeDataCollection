@@ -134,8 +134,6 @@ public class DataCollection extends Application {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-
-
                 //Check if folder exists, if not, create one
                 File directory = new File("EyeGazeData");
                 if (! directory.exists()){
@@ -152,14 +150,14 @@ public class DataCollection extends Application {
                         double y = gazeData.rawCoordinates.y;
                         String timeStamp = gazeData.timeStampString;
 
-
                         rawX = x;
                         rawY = y;
 
                         //System.out.println(offsetX + "," + offsetY);
-
-                        x = x + offsetX;
-                        y = y + offsetY;
+                        if (!(x ==0 && y==0)) {
+                            x = x + offsetX;
+                            y = y + offsetY;
+                        }
 
                         // TO-DO: write to file.
                         String stringX = Double.toString(x);
