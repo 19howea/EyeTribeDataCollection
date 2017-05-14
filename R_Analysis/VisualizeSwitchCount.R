@@ -3,7 +3,7 @@ script.dir <- dirname(sys.frame(1)$ofile)
 setwd(script.dir)
 
 # Prepare the path for files
-base.folder<- paste(script.dir,"/../EyeGazeData/",sep="")
+base.folder<- paste(script.dir,"/../EyeGazeData/Data/",sep="")
 file.list <- list.files(base.folder)
 path <- paste(base.folder, file.list, sep ="")
 
