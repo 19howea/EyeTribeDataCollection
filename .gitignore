@@ -7,3 +7,5 @@ Would skip repository EyeGazeData/
 R_Analysis/\.Rhistory
 
 EyeGazeData/
+
+\.DS_Store
