@@ -1,5 +1,3 @@
-library(LSD)
-
 # Set the working directory as the script file
 script.dir <- dirname(sys.frame(1)$ofile)
 setwd(script.dir)
@@ -23,25 +21,25 @@ for (j in 1:length(path)) {
   }
   
   df.cleaned = df[- remove_list, ]
-  # plot(df.cleaned$xCordinate, df.cleaned$yCordinate,
-  #      main = paste("X and Y Cordinates of Gaze\n",file.list[j]),
-  #      xlab = " X Cordinate", ylab = " Y Cordinate", 
-  #      xlim = c(0,1920), ylim = c(990,0), 
-  #      pch=19, col=rgb(0, 0, 1, 0.05),
-  #      xaxt='n', 
-  #      yaxt='n')
-  # abline(v = 1920 / 2)
+  df.cleaned$timeStampUnix = as.numeric(as.POSIXct(df.cleaned$timeStamp))
+  time.begin = df.cleaned$timeStampUnix[1]
+  time.end = df.cleaned$timeStampUnix[nrow(df.cleaned)]
+  df.cleaned$P_or_Q = ifelse(df.cleaned$xCordinate< 960, 0, 1)
   
-  heatscatter(df.cleaned$xCordinate, df.cleaned$yCordinate,
-              main = paste(".\nX and Y Cordinates of Gaze\n",file.list[j]),
-                    xlab = " X Cordinate", ylab = " Y Cordinate", 
-                    xlim = c(0,1920), ylim = c(990,0),
-                    xaxt='n', 
-                    yaxt='n')
-  abline(v = 1920 / 2, lwd = 2)
+  
+  plot(df.cleaned$P_or_Q, df.cleaned$timeStampUnix, 
+       #ylim = c(time.end, time.end-20),
+       ylim = c(time.end, time.begin),
+       type = "p",
+       ylab = "Time line",
+       xlab = "Passage                                                                    Question",
+       xaxt='n',
+       main = paste("Reading Pattern\n",file.list[j]))
   
   r <- readline(prompt = "Please type Enter to continue...")
   if (r == "q") {
     stop("You have quit!")
   }
 }
+  
+  

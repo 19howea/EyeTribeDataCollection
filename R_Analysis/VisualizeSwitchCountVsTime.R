@@ -50,5 +50,8 @@ for (j in 1:length(path)) {
   plot(time.mark,all.count, type = "l", xlab = "Time (s)", ylab = "Switch Count per 30s",
        main = paste("Switch Count Vs Time\n",file.list[j]))
   
-  readline(prompt = "Please type Enter to continue...")
+  r <- readline(prompt = "Please type Enter to continue...")
+  if (r == "q") {
+    stop("You have quit!")
+  }
 }

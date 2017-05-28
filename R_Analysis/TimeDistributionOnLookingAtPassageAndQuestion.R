@@ -32,6 +32,9 @@ for (j in 1:length(path)) {
   pie(slices, labels = labels, 
       main = paste("Time spent distribution\n",file.list[j]))
   
-  readline(prompt = "Please type Enter to continue...")
+  r <- readline(prompt = "Please type Enter to continue...")
+  if (r == "q") {
+    stop("You have quit!")
+  }
 }
 
