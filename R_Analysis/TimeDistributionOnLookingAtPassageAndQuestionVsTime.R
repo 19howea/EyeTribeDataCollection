@@ -31,9 +31,10 @@ for (j in 1:length(path)) {
   passage.all.count = c()
   question.all.count = c()
   time.mark <- c()
+  interval = 10
   
   while (t1 < time.end) {
-    t2 = t1 +30
+    t2 = t1 +interval
     df.temp = subset(df.cleaned, df.cleaned$timeStampUnix >= t1 & df.cleaned$timeStampUnix < t2 )
     if (nrow(df.temp) > 0) {
       # Count how many times you read the passage and how many times you read the questions
@@ -46,7 +47,7 @@ for (j in 1:length(path)) {
       passage.all.count = c(passage.all.count,0)
       question.all.count = c(question.all.count,0)
     }
-    time.mark = c(time.mark, 30 * length(passage.all.count))
+    time.mark = c(time.mark, interval * length(passage.all.count))
     t1 = t2
   }
   
