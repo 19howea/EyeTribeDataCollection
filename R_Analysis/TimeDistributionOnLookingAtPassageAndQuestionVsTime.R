@@ -26,7 +26,7 @@ for (j in 1:length(path)) {
   time.begin = df.cleaned$timeStampUnix[1]
   time.end = df.cleaned$timeStampUnix[nrow(df.cleaned)]
   
-  #Calculate time distrubution for each 30 seconds
+  #Calculate time distrubution for each interval seconds
   t1 = time.begin
   passage.all.count = c()
   question.all.count = c()
