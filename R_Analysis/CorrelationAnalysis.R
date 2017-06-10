@@ -82,17 +82,61 @@ extract_feature <- function(path){
   Time_Passage_Beginning = (i-1)*10
   print("Time passage beginning has been extracted")
   
+  # Find the amount of interval (10s) that the student spend solely on reading Passage in the whole time 
+  Amount_Interval_Only_Passage <- sum(percent.passage > 80)
+  if (is.na(Amount_Interval_Only_Passage)) Amount_Interval_Only_Passage = 0
+  print("Amount of interval (10s) that the student spend solely on reading Passage has been extracted")
+  
+  # Find the amount of interval (10s) that the student spend solely on reading Question in the whole time 
+  Amount_Interval_Only_Question <- sum(percent.question > 80)
+  if (is.na(Amount_Interval_Only_Question)) Amount_Interval_Only_Question = 0
+  print("Amount of interval (10s) that the student spend solely on reading Question has been extracted")
+  
+  # Find the percent of reading passage in first 4 mins and 
+  # Find the percent of reading question in first 4 mins
+  point_passage_first_4_mins = sum(passage.all.count[1:24])
+  point_question_first_4_mins = sum(question.all.count[1:24])
+  
+  First_4mins_Percent_Passage = point_passage_first_4_mins / (point_passage_first_4_mins + point_question_first_4_mins)
+  First_4mins_Percent_Question = point_question_first_4_mins / (point_passage_first_4_mins + point_question_first_4_mins)
+  
+  print("First 4 mins, percent of reading Passage and Question has been extracted")
+  
+  # Find the percent of reading passage in last 4 mins and 
+  # Find the percent of reading question in last 4 mins
+  n = length(passage.all.count)
+  point_passage_last_4_mins = sum(passage.all.count[(n-24):n])
+  point_question_last_4_mins = sum(question.all.count[(n-24):n])
+  
+  Last_4mins_Percent_Passage = point_passage_last_4_mins / (point_passage_last_4_mins + point_question_last_4_mins)
+  Last_4mins_Percent_Question = point_question_last_4_mins / (point_passage_last_4_mins + point_question_last_4_mins)
+  
+  print("Last 4 mins, percent of reading Passage and Question has been extracted")
+  
   result <- c(Total_Time, 
               Percent_Passage, 
               Percent_Question, 
               Total_Switch_Count, 
-              Time_Passage_Beginning)
+              Time_Passage_Beginning,
+              Amount_Interval_Only_Passage,
+              Amount_Interval_Only_Question,
+              First_4mins_Percent_Passage,
+              First_4mins_Percent_Question,
+              Last_4mins_Percent_Passage,
+              Last_4mins_Percent_Question)
   
   names(result) <- c("Total_Time", 
                      "Percent_Passage", 
                      "Percent_Question", 
                      "Total_Switch_Count", 
-                     "Time_Passage_Beginning")
+                     "Time_Passage_Beginning",
+                     "Amount_Interval_Only_Passage",
+                     "Amount_Interval_Only_Question",
+                     "First_4mins_Percent_Passage",
+                     "First_4mins_Percent_Question",
+                     "Last_4mins_Percent_Passage",
+                     "Last_4mins_Percent_Question"
+                     )
   return(result)
 }
 
@@ -102,6 +146,7 @@ setwd(script.dir)
 
 # Read the excel file
 df = read_excel("DATA COLLECTION STATS.xlsx", sheet = 1)
+df <- as.data.frame(df)
 
 # Clean bad data out 
 df = subset(df, df$Bad_Data == FALSE)
@@ -124,6 +169,13 @@ df$Percent_Passage = NA
 df$Percent_Question = NA
 df$Total_Switch_Count = NA
 df$Time_Passage_Beginning = NA
+df$Amount_Interval_Only_Passage = NA
+df$Amount_Interval_Only_Question = NA
+df$First_4mins_Percent_Passage = NA
+df$First_4mins_Percent_Question = NA
+df$Last_4mins_Percent_Passage = NA
+df$Last_4mins_Percent_Question = NA
+nfeatures = 11
 
 for (i in 1:nrow(df)){
   result <- extract_feature(df$path[i])
@@ -132,7 +184,20 @@ for (i in 1:nrow(df)){
   df$Percent_Question[i] = result["Percent_Question"]
   df$Total_Switch_Count[i] = result["Total_Switch_Count"]
   df$Time_Passage_Beginning[i] = result["Time_Passage_Beginning"]
+  df$Amount_Interval_Only_Passage[i] = result["Amount_Interval_Only_Passage"]
+  df$Amount_Interval_Only_Question[i] = result["Amount_Interval_Only_Question"]
+  df$First_4mins_Percent_Passage[i] = result["First_4mins_Percent_Passage"]
+  df$First_4mins_Percent_Question[i] = result["First_4mins_Percent_Question"]
+  df$Last_4mins_Percent_Passage[i] = result["Last_4mins_Percent_Passage"]
+  df$Last_4mins_Percent_Question[i] = result["Last_4mins_Percent_Question"]
 }
 
-cor(df$Correct_Answer, df$Total_Time)
-plot(df$Total_Time, df$Correct_Answer)
+feature_name = names(result)
+
+for (i in 1:nfeatures){
+  feature = df[feature_name[i]][,1]
+  correlation = cor(df$Correct_Answer, feature)
+  plot(feature, df$Correct_Answer, main = correlation, xlab = feature_name[i])
+}
+
+
