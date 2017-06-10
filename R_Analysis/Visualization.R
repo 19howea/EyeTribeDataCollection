@@ -22,7 +22,10 @@ for (j in 1:length(path)) {
     }
   }
   
-  df.cleaned = df[- remove_list, ]
+  if(length(remove_list) == 0){
+    df.cleaned = df
+  }else df.cleaned = df[- remove_list, ]
+  
   # plot(df.cleaned$xCordinate, df.cleaned$yCordinate,
   #      main = paste("X and Y Cordinates of Gaze\n",file.list[j]),
   #      xlab = " X Cordinate", ylab = " Y Cordinate", 
