@@ -1,5 +1,46 @@
 library (readxl)
 
+speed_extract <- function(df){
+  df = subset(df, xCordinate <= 960)
+  
+  time_next = df$timeStampUnix
+  time_next = time_next[-1]
+  time_next = c(time_next,0)
+  
+  
+  df$timeInterval =  time_next - df$timeStampUnix
+  df = df[-nrow(df),]
+  
+  cut_index = which(df$timeInterval > 0.06)
+  
+  cluster_reading = list()
+  start_index = 1
+  for (i in 1:length(cut_index)){
+    cluster_reading[[i]] = df[(start_index:cut_index[i]),]
+    start_index = cut_index[i] + 1
+  }
+  
+  average_distance_each_group = c()
+  
+  for (i in 1:length(cluster_reading)){
+    if (nrow(cluster_reading[[i]]) < 2) next
+    cluster_reading[[i]]$distance = NA
+    for (j in 2:nrow(cluster_reading[[i]])){
+      cluster_reading[[i]]$distance[j]=sqrt((cluster_reading[[i]]$xCordinate[j]- cluster_reading[[i]]$xCordinate[j-1])^2 +
+                                              (cluster_reading[[i]]$yCordinate[j]- cluster_reading[[i]]$yCordinate[j-1])^2)
+    }
+    distances = cluster_reading[[i]]$distance[2:nrow(cluster_reading[[i]])]
+    average_distance = mean(distances)
+    average_distance_each_group = c(average_distance_each_group, average_distance)
+  }
+  
+  average_distance_each_group = average_distance_each_group[which(average_distance_each_group < 60)]
+  
+  #plot(average_distance_each_group, ylim = c(0,60))
+  #print(mean(average_distance_each_group))
+  return(mean(average_distance_each_group))
+}
+
 extract_feature <- function(path){
   print(paste("Extracting", path, "..."))
   
@@ -113,6 +154,12 @@ extract_feature <- function(path){
   
   print("Last 4 mins, percent of reading Passage and Question has been extracted")
   
+  # Find the speed of reading passage. The faster the speed, the distance between 2 points should be further.
+  # The function return the average distance between 2 points
+  
+  Reading_Passage_Speed <- speed_extract(df.cleaned)
+  print("Reading passage speed has been extracted")
+  
   result <- c(Total_Time, 
               Percent_Passage, 
               Percent_Question, 
@@ -123,7 +170,8 @@ extract_feature <- function(path){
               First_4mins_Percent_Passage,
               First_4mins_Percent_Question,
               Last_4mins_Percent_Passage,
-              Last_4mins_Percent_Question)
+              Last_4mins_Percent_Question, 
+              Reading_Passage_Speed)
   
   names(result) <- c("Total_Time", 
                      "Percent_Passage", 
@@ -135,7 +183,8 @@ extract_feature <- function(path){
                      "First_4mins_Percent_Passage",
                      "First_4mins_Percent_Question",
                      "Last_4mins_Percent_Passage",
-                     "Last_4mins_Percent_Question"
+                     "Last_4mins_Percent_Question",
+                     "Reading_Passage_Speed"
                      )
   return(result)
 }
@@ -175,7 +224,8 @@ df$First_4mins_Percent_Passage = NA
 df$First_4mins_Percent_Question = NA
 df$Last_4mins_Percent_Passage = NA
 df$Last_4mins_Percent_Question = NA
-nfeatures = 11
+df$Reading_Passage_Speed = NA
+nfeatures = 12
 
 for (i in 1:nrow(df)){
   result <- extract_feature(df$path[i])
@@ -190,6 +240,7 @@ for (i in 1:nrow(df)){
   df$First_4mins_Percent_Question[i] = result["First_4mins_Percent_Question"]
   df$Last_4mins_Percent_Passage[i] = result["Last_4mins_Percent_Passage"]
   df$Last_4mins_Percent_Question[i] = result["Last_4mins_Percent_Question"]
+  df$Reading_Passage_Speed[i] = result["Reading_Passage_Speed"]
 }
 
 feature_name = names(result)
@@ -197,7 +248,16 @@ feature_name = names(result)
 for (i in 1:nfeatures){
   feature = df[feature_name[i]][,1]
   correlation = cor(df$Correct_Answer, feature)
-  plot(feature, df$Correct_Answer, main = correlation, xlab = feature_name[i])
+  plot(feature, df$Correct_Answer, 
+       main = paste("Correlation of # of correct answer vs",feature_name[i],":\n", correlation), 
+       xlab = feature_name[i],
+       ylab = "Correct answers",
+       pch = 19, cex = 2)
+  abline(lm(df$Correct_Answer~feature), col="red", lwd = 3)
+  #lines(lowess(feature,df$Correct_Answer), col="blue")
+  
+  r <- readline(prompt = "Please type Enter to continue...")
+  if (r == "q") {
+    stop("You have quit!")
+  }
 }
-
-
