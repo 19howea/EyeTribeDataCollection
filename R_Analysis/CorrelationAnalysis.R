@@ -249,12 +249,13 @@ for (i in 1:nfeatures){
   feature = df[feature_name[i]][,1]
   correlation = cor(df$Correct_Answer, feature)
   plot(feature, df$Correct_Answer, 
-       main = paste("Correlation of # of correct answer vs",feature_name[i],":\n", correlation), 
+       main = paste("Correlation of # of correct answer vs",feature_name[i], ":\n" , correlation),
        xlab = feature_name[i],
        ylab = "Correct answers",
        pch = 19, cex = 2)
   abline(lm(df$Correct_Answer~feature), col="red", lwd = 3)
   #lines(lowess(feature,df$Correct_Answer), col="blue")
+  
   
   r <- readline(prompt = "Please type Enter to continue...")
   if (r == "q") {
