@@ -85,7 +85,7 @@ extract_feature <- function(path){
     if (df.cleaned$xCordinate[i] > 960 && df.cleaned$xCordinate[i+1] <= 960 ) Total_Switch_Count = Total_Switch_Count + 1
   }
   print("Total switch count was extracted.")
-   
+  
   #Find how much time is spent on beginning for reading passage
   #Calculate time distrubution for each interval seconds
   t1 = time.begin
@@ -185,7 +185,7 @@ extract_feature <- function(path){
                      "Last_4mins_Percent_Passage",
                      "Last_4mins_Percent_Question",
                      "Reading_Passage_Speed"
-                     )
+  )
   return(result)
 }
 
@@ -245,21 +245,66 @@ for (i in 1:nrow(df)){
 
 feature_name = names(result)
 
+#split the data set into two different groups
+# Upper group correct asnwer = > 9, then else
+df$high.score = df$Correct_Answer >= 9
+df.upper = subset(df, df$high.score)
+df.lower = subset(df, !df$high.score)
+
+
 for (i in 1:nfeatures){
   feature = df[feature_name[i]][,1]
   correlation = cor(df$Correct_Answer, feature)
-  plot(feature, df$Correct_Answer, 
+  plot(feature, df$Correct_Answer,
        main = paste("Correlation of # of correct answer vs",feature_name[i], ":\n" , correlation),
        xlab = feature_name[i],
        ylab = "Correct answers",
        pch = 19, cex = 2,
-       col = rgb(0,0,1,0.5))
-  abline(lm(df$Correct_Answer~feature), col="red", lwd = 3,)
-  #lines(lowess(feature,df$Correct_Answer), col="blue")
-  
+       #col = rgb(0,0,1,0.5))
+       col = rgb(0,1,df$high.score,0.5))
   
   r <- readline(prompt = "Please type Enter to continue...")
   if (r == "q") {
     stop("You have quit!")
   }
 }
+
+#Stat test to verify the features between upper and lower are different
+plot(density(df.lower$Total_Time), ylim=c(0,0.2))
+lines(density(df.upper$Total_Time), col="red")
+
+plot(density(df.lower$Percent_Question), ylim=c(0,0.06))
+lines(density(df.upper$Percent_Question), col="red")
+
+plot(density(df.lower$Total_Switch_Count), ylim=c(0,0.015))
+lines(density(df.upper$Total_Switch_Count), col="red")
+
+plot(density(df.lower$Amount_Interval_Only_Passage), ylim=c(0,0.1))
+lines(density(df.upper$Amount_Interval_Only_Passage), col="red")
+
+plot(density(df.lower$First_4mins_Percent_Passage), ylim=c(0,3))
+lines(density(df.upper$First_4mins_Percent_Passage), col="red")
+
+
+plot(density(df.lower$First_4mins_Percent_Question), ylim=c(0,3))
+lines(density(df.upper$First_4mins_Percent_Question), col="red")
+
+plot(density(df.lower$Last_4mins_Percent_Passage), ylim=c(0,4))
+lines(density(df.upper$Last_4mins_Percent_Passage), col="red")
+
+plot(density(df.lower$Reading_Passage_Speed), ylim=c(0,0.1))
+lines(density(df.upper$Reading_Passage_Speed), col="red")
+
+t.test(df$Total_Time ~ df$high.score, data = df)  # Significant
+t.test(df$Percent_Passage~ df$high.score, data = df) # Not sig
+t.test(df$Percent_Question~ df$high.score, data = df) # Not sig
+t.test(df$Time_Passage_Beginning ~ df$high.score, data = df) # Significant
+t.test(df$Total_Switch_Count ~ df$high.score, data = df) # Significant
+t.test(df$Amount_Interval_Only_Passage ~ df$high.score, data = df) #Not sig
+t.test(df$Amount_Interval_Only_Question ~ df$high.score, data = df) #Not sig 
+t.test(df$First_4mins_Percent_Passage ~ df$high.score, data = df) #Significant
+t.test(df$First_4mins_Percent_Question ~ df$high.score, data = df) #Significant
+t.test(df$Last_4mins_Percent_Passage ~ df$high.score, data = df) #Significant
+t.test(df$Last_4mins_Percent_Question ~ df$high.score, data = df) #Significant
+t.test(df$Reading_Passage_Speed ~ df$high.score, data = df) #Significant
+
