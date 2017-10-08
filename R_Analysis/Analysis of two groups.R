@@ -308,3 +308,54 @@ t.test(df$Last_4mins_Percent_Passage ~ df$high.score, data = df) #Significant
 t.test(df$Last_4mins_Percent_Question ~ df$high.score, data = df) #Significant
 t.test(df$Reading_Passage_Speed ~ df$high.score, data = df) #Significant
 
+#visualize a boxplot 
+boxplot(df.upper$Total_Time, df.lower$Total_Time, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of Total Time among two groups")
+
+boxplot(df.upper$Percent_Passage, df.lower$Percent_Passage, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of Percent Passage among two groups")
+
+boxplot(df.upper$Percent_Question, df.lower$Percent_Question, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of Percent Question among two groups")
+
+boxplot(df.upper$Time_Passage_Beginning, df.lower$Time_Passage_Beginning, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of Time Passage Beginning among two groups")
+
+boxplot(df.upper$Total_Switch_Count, df.lower$Total_Switch_Count, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of Switch Count among two groups")
+
+boxplot(df.upper$Amount_Interval_Only_Passage, df.lower$Amount_Interval_Only_Passage, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of Amount Interval Only Passage among two groups")
+
+boxplot(df.upper$Amount_Interval_Only_Question, df.lower$Amount_Interval_Only_Question, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of Amount Interval Only Question among two groups")
+
+boxplot(df.upper$First_4mins_Percent_Passage, df.lower$First_4mins_Percent_Passage, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of First 4mins Percent Passage among two groups")
+
+boxplot(df.upper$First_4mins_Percent_Question, df.lower$First_4mins_Percent_Question, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of First 4mins Percent Question among two groups")
+
+boxplot(df.upper$Last_4mins_Percent_Passage, df.lower$Last_4mins_Percent_Passage, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of Last 4mins Percent Passage among two groups")
+
+boxplot(df.upper$Last_4mins_Percent_Question, df.lower$Last_4mins_Percent_Question, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of Last 4mins Percent Question among two groups")
+
+boxplot(df.upper$Reading_Passage_Speed, df.lower$Reading_Passage_Speed, 
+        names=c("Scores greater than or equal to 9", "Scores lower than 9"),
+        main="Distribution of Reading_Passage_Speed among two groups")
+
+#write to a csv file
+write.csv(df, file = "Extracted Features.csv", row.names = FALSE)

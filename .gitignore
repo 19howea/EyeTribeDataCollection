@@ -8,4 +8,4 @@ R_Analysis/\.Rhistory
 
 EyeGazeData/
 
-\.DS_Store
+*.DS_Store
